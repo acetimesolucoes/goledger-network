@@ -7,12 +7,22 @@ import (
 )
 
 func TestCreateBlock(t *testing.T) {
-	block := new(block.Block).Init("bla", "ble", "bli", "blo")
-	block.ToString()
+	var newBlock block.Block
 
-	if block.Hash != "bla" {
-		t.Log("TestCreateBlock pass with success")
-	} else {
+	var genesis block.Block
+	genesis.Genesis()
+
+	newBlock.MineBlock(genesis, "bla")
+
+	if newBlock.Data == genesis.Data {
+		t.Error("Fail: the `block.data` is equals to `lastblock` data")
 		t.Fail()
+	}
+
+	if newBlock.LastHash != genesis.Hash {
+		t.Error("Fail: the `block.lasthash` is not equals to `lastblock.hash`")
+		t.Fail()
+	} else {
+		t.Logf("Success: create block test passed with expect")
 	}
 }
