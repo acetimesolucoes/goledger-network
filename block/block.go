@@ -37,7 +37,6 @@ func (b *Block) ToString() {
 }
 
 func (b *Block) Genesis() {
-	// block := new(Block)
 	b.init(time.Now().UnixNano(), "-----", "f1r57-h45h", [0]string{})
 }
 
