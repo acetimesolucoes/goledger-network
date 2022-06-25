@@ -1,0 +1,9 @@
+{
+  "name": "blockchain-go",
+  "version": "1.0.0",
+  "main": "main.go",
+  "license": "MIT",
+  "scripts": {
+    "dev-test": ""
+  }
+}
