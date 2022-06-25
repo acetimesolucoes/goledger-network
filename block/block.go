@@ -6,17 +6,19 @@ type Block struct {
 	Timestamp string `json:"timestamp"`
 	LastHash  string `json:"last_hash"`
 	Hash      string `json:"hash"`
-	Data      string `json:"data"`
+	Data      any    `json:"data"`
 }
 
-func (b *Block) init(timestamp string, lasthash string, hash string, data string) {
+func (b *Block) Init(timestamp string, lasthash string, hash string, data any) Block {
 	b.Timestamp = timestamp
 	b.LastHash = lasthash
 	b.Hash = hash
 	b.Data = data
+
+	return *b
 }
 
-func (b *Block) toString() {
+func (b *Block) ToString() {
 	fmt.Printf(`Block -
 		Timestamp: %s
 		Last Hash: %s

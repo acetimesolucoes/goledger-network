@@ -1,24 +1,18 @@
 package block_test
 
 import (
-	"fmt"
 	"testing"
+
+	"github.com/acetimesolutions/blockchain-golang/block"
 )
 
-type Block struct {
-	Timestamp string `json:"timestamp"`
-	LastHash  string `json:"last_hash"`
-	Hash      string `json:"hash"`
-	Data      string `json:"data"`
-}
+func TestCreateBlock(t *testing.T) {
+	block := new(block.Block).Init("bla", "ble", "bli", "blo")
+	block.ToString()
 
-func CreateBlock(t *testing.T) {
-	block := new(Block)
-	block.Data = ""
-	block.Hash = ""
-	block.LastHash = ""
-	block.Timestamp = ""
-
-	fmt.Printf("block: %v\n", block)
-
+	if block.Hash != "bla" {
+		t.Log("TestCreateBlock pass with success")
+	} else {
+		t.Fail()
+	}
 }

@@ -1,3 +1,3 @@
-module github.com/acetimesolucoes/blockchain-golang
+module github.com/acetimesolutions/blockchain-golang
 
 go 1.18
