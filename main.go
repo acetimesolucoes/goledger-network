@@ -18,7 +18,6 @@ func main() {
 	route.GET("/ping", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{
 			"message":   "pong",
-			"datetime":  time.Now().UTC(),
 			"timestamp": time.Now().UnixNano(),
 		})
 	})
