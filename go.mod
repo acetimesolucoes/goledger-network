@@ -2,15 +2,17 @@ module github.com/acetimesolutions/blockchain-golang
 
 go 1.18
 
+require github.com/gin-gonic/gin v1.8.1
+
 require (
 	github.com/gin-contrib/sse v0.1.0 // indirect
-	github.com/gin-gonic/gin v1.8.1 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-playground/validator/v10 v10.11.0 // indirect
 	github.com/goccy/go-json v0.9.7 // indirect
-	github.com/gorilla/websocket v1.5.0 // indirect
+	github.com/joho/godotenv v1.4.0
 	github.com/json-iterator/go v1.1.12 // indirect
+	github.com/klauspost/compress v1.10.3 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
@@ -23,4 +25,5 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
+	nhooyr.io/websocket v1.8.7 // indirect
 )

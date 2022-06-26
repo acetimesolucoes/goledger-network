@@ -1,40 +1,47 @@
 package main
 
 import (
+	"log"
 	"net/http"
+	"os"
 	"time"
 
+	"github.com/joho/godotenv"
+
 	"github.com/acetimesolutions/blockchain-golang/blockchain"
+	"github.com/acetimesolutions/blockchain-golang/p2p"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 
-	var bc blockchain.Blockchain
-	bc.Init()
+	err := godotenv.Load(".env")
 
-	route := gin.Default()
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	route.GET("/ping", func(ctx *gin.Context) {
+	PORT := os.Getenv("PORT")
+
+	if PORT == "" {
+		PORT = ":3001"
+	}
+
+	router := gin.Default()
+
+	v1 := router.Group("/api/v1")
+	{
+		new(blockchain.BlockchainServer).Run(v1)
+		new(p2p.P2pServer).Run(v1)
+	}
+
+	router.GET("/ping", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{
-			"message":   "pong",
-			"timestamp": time.Now().UnixNano(),
+			"version":      "1.0.0",
+			"package_name": "@acetime/blockchain",
+			"timestamp":    time.Now().UnixNano(),
 		})
 	})
 
-	route.GET("/blocks", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, bc.Chain)
-	})
-
-	route.POST("/mine", func(ctx *gin.Context) {
-
-		var block any
-		ctx.BindJSON(&block)
-
-		bc.AddBlock(block)
-
-		ctx.JSON(http.StatusOK, bc.Chain)
-	})
-
-	route.Run(":3001")
+	router.Run(":" + PORT)
 }
