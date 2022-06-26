@@ -1,4 +1,4 @@
-package blockchain_test
+package test
 
 import (
 	"testing"
