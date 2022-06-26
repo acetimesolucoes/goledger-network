@@ -2,25 +2,23 @@ package blockchain
 
 import (
 	"fmt"
-
-	"github.com/acetimesolutions/blockchain-golang/block"
 )
 
 type Blockchain struct {
-	Chain []block.Block
+	Chain []Block
 }
 
 func (b *Blockchain) Init() {
 
-	var genesis block.Block
+	var genesis Block
 	genesis.Genesis()
 
 	b.Chain = append(b.Chain, genesis)
 }
 
-func (b *Blockchain) AddBlock(data any) block.Block {
+func (b *Blockchain) AddBlock(data any) Block {
 
-	var block block.Block
+	var block Block
 	block.MineBlock(b.Chain[len(b.Chain)-1], data)
 
 	b.Chain = append(b.Chain, block)
@@ -28,8 +26,8 @@ func (b *Blockchain) AddBlock(data any) block.Block {
 	return block
 }
 
-func (b *Blockchain) IsValid(chain []block.Block) bool {
-	var genesis block.Block
+func (b *Blockchain) IsValid(chain []Block) bool {
+	var genesis Block
 	genesis.Genesis()
 
 	if chain[0] != genesis {
@@ -48,7 +46,7 @@ func (b *Blockchain) IsValid(chain []block.Block) bool {
 	return true
 }
 
-func (b *Blockchain) ReplaceChain(newChain []block.Block) {
+func (b *Blockchain) ReplaceChain(newChain []Block) {
 
 	if len(newChain) <= len(b.Chain) {
 		fmt.Print("Received chain is not longer than the current chain.")

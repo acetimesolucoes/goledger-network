@@ -3,7 +3,6 @@ package blockchain_test
 import (
 	"testing"
 
-	"github.com/acetimesolutions/blockchain-golang/block"
 	"github.com/acetimesolutions/blockchain-golang/blockchain"
 )
 
@@ -27,7 +26,7 @@ func init() {
 
 func TestBlockchainInit(t *testing.T) {
 
-	var genesis block.Block
+	var genesis blockchain.Block
 	genesis.Genesis()
 
 	var blockchain blockchain.Blockchain
@@ -44,7 +43,7 @@ func TestBlockchainInit(t *testing.T) {
 }
 
 func TestAddBlockToBlockchain(t *testing.T) {
-	var genesis block.Block
+	var genesis blockchain.Block
 	genesis.Genesis()
 
 	blchn1.AddBlock("foo")

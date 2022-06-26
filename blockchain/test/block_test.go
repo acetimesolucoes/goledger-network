@@ -1,15 +1,15 @@
-package block_test
+package blockchain_test
 
 import (
 	"testing"
 
-	"github.com/acetimesolutions/blockchain-golang/block"
+	"github.com/acetimesolutions/blockchain-golang/blockchain"
 )
 
 func TestCreateBlock(t *testing.T) {
-	var newBlock block.Block
+	var newBlock blockchain.Block
 
-	var genesis block.Block
+	var genesis blockchain.Block
 	genesis.Genesis()
 
 	newBlock.MineBlock(genesis, "bla")
