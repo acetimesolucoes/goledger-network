@@ -7,22 +7,21 @@ import (
 )
 
 type BlockchainServer struct {
+	Blockchain Blockchain
+	// P2PServer  *p2p.P2pServer
 }
 
-var bc Blockchain
+func (b *BlockchainServer) Run(e *gin.Engine, bc Blockchain) {
 
-func init() {
-	bc.Init()
-}
+	b.Blockchain.ReplaceChain(bc.Chain)
 
-func (b *BlockchainServer) Run(e *gin.Engine) {
 	e.GET("/block", b.handleBlocks())
 	e.POST("/mine", b.handleMine())
 }
 
 func (b *BlockchainServer) handleBlocks() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, bc.Chain)
+		ctx.JSON(http.StatusOK, b.Blockchain.Chain)
 	}
 }
 
@@ -30,7 +29,10 @@ func (b *BlockchainServer) handleMine() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var block any
 		ctx.BindJSON(&block)
-		bc.AddBlock(block)
-		ctx.JSON(http.StatusOK, bc.Chain)
+		b.Blockchain.AddBlock(block)
+
+		// b.P2PServer.SyncChains()
+
+		ctx.JSON(http.StatusOK, b.Blockchain.Chain)
 	}
 }

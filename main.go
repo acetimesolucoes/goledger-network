@@ -11,17 +11,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var conf config.Config
-var bc blockchain.Blockchain
-
 func main() {
+	var conf config.Config
+	var bc blockchain.Blockchain
+	var p2pServer p2p.P2pServer
+	var blockchainServer blockchain.BlockchainServer
+
+	conf.LoadConfigs()
+	bc.Init()
+
 	router := gin.Default()
 
-	var p2pServer p2p.P2pServer
 	p2pServer.Run(router, bc)
-
-	var blockchainServer blockchain.BlockchainServer
-	blockchainServer.Run(router)
+	blockchainServer.Run(router, bc)
 
 	router.GET("/ping", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{
@@ -32,9 +34,4 @@ func main() {
 	})
 
 	router.Run(":" + strconv.Itoa(conf.HTTP_PORT))
-}
-
-func init() {
-	conf.LoadConfigs()
-	bc.Init()
 }

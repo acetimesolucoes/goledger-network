@@ -49,13 +49,13 @@ func (b *Blockchain) IsValid(chain []Block) bool {
 func (b *Blockchain) ReplaceChain(newChain []Block) {
 
 	if len(newChain) <= len(b.Chain) {
-		fmt.Print("Received chain is not longer than the current chain.")
+		fmt.Print("Received chain is not longer than the current chain.\n")
 		return
 	} else if !b.IsValid(newChain) {
-		fmt.Print("Received chain is not valid.")
+		fmt.Print("Received chain is not valid.\n")
 		return
 	} else {
-		fmt.Print("Replacing blockchain with the new chain.")
+		fmt.Print("Replacing blockchain with the new chain.\n")
 		b.Chain = newChain
 	}
 }
