@@ -37,7 +37,7 @@ func (b *Block) ToString() {
 }
 
 func (b *Block) Genesis() {
-	b.init(time.Now().UnixNano(), "-----", "f1r57-h45h", [0]string{})
+	b.init(1656202080635360013, "-----", "f1r57-h45h", [0]string{})
 }
 
 func (b *Block) MineBlock(lastBlock Block, data any) {
@@ -65,4 +65,8 @@ func (b *Block) Hasher(timestamp int64, lastHash string, data any) string {
 	buf := sha256.Sum256(strToHash)
 
 	return hex.EncodeToString(bytes.NewBuffer(buf[:]).Bytes())
+}
+
+func (b *Block) BlockHash(block Block) string {
+	return block.Hasher(block.Timestamp, block.LastHash, block.Data)
 }
