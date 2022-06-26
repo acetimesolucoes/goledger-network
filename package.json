@@ -4,6 +4,9 @@
   "main": "main.go",
   "license": "MIT",
   "scripts": {
-    "dev-test": ""
+    "start:p2p1": "HTTP_PORT=3001 P2P_PORT=3001 PEERS= go run main.go",
+    "start:p2p2": "HTTP_PORT=3002 P2P_PORT=3002 PEERS=ws://localhost:3001/p2p/connect go run main.go",
+    "start:p2p3": "HTTP_PORT=3003 P2P_PORT=3003 PEERS=ws://localhost:3001/p2p/connect,ws://localhost:3002/p2p/connect go run main.go",
+    "start:p2p4": "HTTP_PORT=3005 P2P_PORT=3004 PEERS=ws://localhost:3001/p2p/connect,ws://localhost:3002/p2p/connect,ws://localhost:3003/p2p/connect go run main.go"
   }
 }

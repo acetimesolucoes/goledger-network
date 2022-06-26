@@ -15,10 +15,9 @@ func init() {
 	bc.Init()
 }
 
-func (b *BlockchainServer) Run(rg *gin.RouterGroup) {
-
-	rg.GET("/blocks", b.handleBlocks())
-	rg.POST("/blocks", b.handleMine())
+func (b *BlockchainServer) Run(e *gin.Engine) {
+	e.GET("/block", b.handleBlocks())
+	e.POST("/mine", b.handleMine())
 }
 
 func (b *BlockchainServer) handleBlocks() gin.HandlerFunc {

@@ -1,39 +1,27 @@
 package main
 
 import (
-	"log"
 	"net/http"
-	"os"
+	"strconv"
 	"time"
 
-	"github.com/joho/godotenv"
-
 	"github.com/acetimesolutions/blockchain-golang/blockchain"
+	"github.com/acetimesolutions/blockchain-golang/config"
 	"github.com/acetimesolutions/blockchain-golang/p2p"
 	"github.com/gin-gonic/gin"
 )
 
+var conf config.Config
+var bc blockchain.Blockchain
+
 func main() {
-
-	err := godotenv.Load(".env")
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	PORT := os.Getenv("PORT")
-
-	if PORT == "" {
-		PORT = ":3001"
-	}
-
 	router := gin.Default()
 
-	v1 := router.Group("/api/v1")
-	{
-		new(blockchain.BlockchainServer).Run(v1)
-		new(p2p.P2pServer).Run(v1)
-	}
+	var p2pServer p2p.P2pServer
+	p2pServer.Run(router, bc)
+
+	var blockchainServer blockchain.BlockchainServer
+	blockchainServer.Run(router)
 
 	router.GET("/ping", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{
@@ -43,5 +31,10 @@ func main() {
 		})
 	})
 
-	router.Run(":" + PORT)
+	router.Run(":" + strconv.Itoa(conf.HTTP_PORT))
+}
+
+func init() {
+	conf.LoadConfigs()
+	bc.Init()
 }
