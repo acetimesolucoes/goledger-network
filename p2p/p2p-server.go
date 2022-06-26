@@ -2,6 +2,7 @@ package p2p
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 	"github.com/acetimesolutions/blockchain-golang/blockchain"
 	"github.com/acetimesolutions/blockchain-golang/config"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/internal/bytesconv"
 
 	"nhooyr.io/websocket"
 	"nhooyr.io/websocket/wsjson"
@@ -17,19 +19,25 @@ import (
 
 type P2pServer struct {
 	blockchain blockchain.Blockchain
-	sockets    []string
+	// sockets    []string
 }
 
 var conf config.Config
+var websocketConnection *websocket.Conn
 
 func init() {
+	var instance P2pServer
+
 	conf.LoadConfigs()
 
-	websocketConnectPeers()
-	websocketHandler(nil, &http.Request{})
+	instance.connectToPeers()
+	instance.websocketHandler(nil, &http.Request{})
 }
 
 func (p *P2pServer) Run(e *gin.Engine, bc blockchain.Blockchain) {
+
+	p.blockchain = bc
+
 	e.LoadHTMLFiles("static/index.html")
 
 	e.GET("/", func(c *gin.Context) {
@@ -37,15 +45,11 @@ func (p *P2pServer) Run(e *gin.Engine, bc blockchain.Blockchain) {
 	})
 
 	e.GET("/p2p/connect", func(c *gin.Context) {
-		websocketHandler(c.Writer, c.Request)
+		p.websocketHandler(c.Writer, c.Request)
 	})
-
-	// e.GET("/p2p/connect-peers", func(c *gin.Context) {
-	// 	websocketConnectPeers()
-	// })
 }
 
-func websocketHandler(w http.ResponseWriter, r *http.Request) {
+func (p *P2pServer) websocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	if w == nil || r == nil {
 		return
@@ -62,10 +66,12 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), time.Second*10)
 	defer cancel()
 
-	err = wsjson.Write(ctx, conn, "Socket connected")
+	err = wsjson.Write(ctx, conn, "Master -> Slave \n")
 	if err != nil {
 		fmt.Print(err)
 	}
+
+	p.handleMessage(p.blockchain.Chain)
 
 	var v interface{}
 	err = wsjson.Read(ctx, conn, &v)
@@ -77,7 +83,7 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 	conn.Close(websocket.StatusNormalClosure, "")
 }
 
-func websocketConnectPeers() {
+func (p *P2pServer) connectToPeers() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
@@ -86,27 +92,50 @@ func websocketConnectPeers() {
 	for i := 0; i < len(peers); i++ {
 		peer := peers[i]
 
-		c, _, err := websocket.Dial(ctx, peer, nil)
+		conn, _, err := websocket.Dial(ctx, peer, nil)
 		if err != nil {
-			fmt.Print("Fail in connect to peer")
+			fmt.Print("Fail in connect to peer\n")
 			log.Fatal(err)
 		}
-		defer c.Close(websocket.StatusInternalError, "the sky is falling")
+		defer conn.Close(websocket.StatusInternalError, "the sky is falling")
 
-		err = wsjson.Write(ctx, c, "Socket connected")
+		websocketConnection = conn
+
+		// p.handleMessage("Master -> Slave Some")
+		p.handleMessage(p.blockchain.Chain)
+
+		err = wsjson.Write(ctx, conn, "Slave -> Master \n")
 		if err != nil {
 			fmt.Print(err)
 			log.Fatal(err)
 		}
 
 		var v interface{}
-		err = wsjson.Read(ctx, c, &v)
+		err = wsjson.Read(ctx, conn, &v)
 		if err != nil {
 			fmt.Print(err)
 			log.Fatal(err)
 		}
 		fmt.Print(v)
 
-		c.Close(websocket.StatusNormalClosure, "")
+		conn.Close(websocket.StatusNormalClosure, "")
+	}
+}
+
+func (p *P2pServer) handleMessage(message interface{}) {
+
+	// data := gin.H{"data": message}
+	bytes, _ := json.Marshal(message)
+
+	str := bytesconv.BytesToString(bytes)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+
+	err := wsjson.Write(ctx, websocketConnection, str)
+
+	if err != nil {
+		fmt.Print(err)
+		log.Fatal(err)
 	}
 }
