@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/acetimesolutions/blockchain-golang/blockchain"
-	"github.com/acetimesolutions/blockchain-golang/config"
-	"github.com/acetimesolutions/blockchain-golang/p2p"
+	"github.com/acetimesolutions/chain-goledger/blockchain"
+	"github.com/acetimesolutions/chain-goledger/config"
+	"github.com/acetimesolutions/chain-goledger/p2p"
 	"github.com/gin-gonic/gin"
 )
 

@@ -1,4 +1,4 @@
-module github.com/acetimesolutions/blockchain-golang
+module github.com/acetimesolutions/chain-goledger
 
 go 1.18
 
