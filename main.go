@@ -22,7 +22,11 @@ func main() {
 
 	router := gin.Default()
 
-	p2pServer.Run(router, bc)
+	p2pServer.Blockchain.ReplaceChain(bc.Chain)
+	p2pServer.Config.LoadConfigs()
+	p2pServer.Run(router)
+
+	blockchainServer.Blockchain.ReplaceChain(bc.Chain)
 	blockchainServer.Run(router, bc)
 
 	router.GET("/ping", func(ctx *gin.Context) {

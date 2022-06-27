@@ -15,7 +15,7 @@ func (b *BlockchainServer) Run(e *gin.Engine, bc Blockchain) {
 
 	b.Blockchain.ReplaceChain(bc.Chain)
 
-	e.GET("/block", b.handleBlocks())
+	e.GET("/blocks", b.handleBlocks())
 	e.POST("/mine", b.handleMine())
 }
 
@@ -31,8 +31,7 @@ func (b *BlockchainServer) handleMine() gin.HandlerFunc {
 		ctx.BindJSON(&block)
 		b.Blockchain.AddBlock(block)
 
-		// b.P2PServer.SyncChains()
-
+		// ctx.Redirect(http.StatusPermanentRedirect, "p2p/sync")
 		ctx.JSON(http.StatusOK, b.Blockchain.Chain)
 	}
 }

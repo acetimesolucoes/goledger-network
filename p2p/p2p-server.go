@@ -17,21 +17,20 @@ import (
 	"nhooyr.io/websocket/wsjson"
 )
 
+type IP2pServer interface {
+	Run()
+	SyncChains()
+	P2pServer
+}
+
 type P2pServer struct {
 	Blockchain  blockchain.Blockchain
-	Connection  *websocket.Conn
 	Connections []*websocket.Conn
 	Contexts    []*context.Context
 	Config      config.Config
 }
 
-func (p *P2pServer) Run(e *gin.Engine, bc blockchain.Blockchain) {
-
-	p.Config.LoadConfigs()
-
-	p.Blockchain.ReplaceChain(bc.Chain)
-	p.websocketHandler(nil, &http.Request{})
-	p.connectToPeers()
+func (p *P2pServer) Run(e *gin.Engine) {
 
 	e.LoadHTMLFiles("static/index.html")
 
@@ -42,6 +41,9 @@ func (p *P2pServer) Run(e *gin.Engine, bc blockchain.Blockchain) {
 	e.GET("/p2p/connect", func(c *gin.Context) {
 		p.websocketHandler(c.Writer, c.Request)
 	})
+
+	// p.websocketHandler(nil, &http.Request{})
+	p.connectToPeers()
 }
 
 func (p *P2pServer) websocketHandler(w http.ResponseWriter, r *http.Request) {
@@ -55,20 +57,17 @@ func (p *P2pServer) websocketHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Printf("Failed to set websocket upgrade: %+v", err)
 		return
+	} else {
+		fmt.Print("start websocket connection...\n")
 	}
 
-	defer conn.Close(websocket.StatusInternalError, "closed websocket connection...")
-
 	ctx, cancel := context.WithTimeout(r.Context(), time.Second*10)
-	p.Contexts = append(p.Contexts, &ctx)
-	p.Connections = append(p.Connections, conn)
-
-	defer cancel()
-
 	p.messageHandler(&ctx, conn)
 	p.SyncChains()
 
-	conn.Close(websocket.StatusNormalClosure, "")
+	// defer conn.Close(websocket.StatusInternalError, "closed websocket connection...")
+	defer cancel()
+	// conn.Close(websocket.StatusNormalClosure, "")
 }
 
 func (p *P2pServer) connectToPeers() {
@@ -82,23 +81,24 @@ func (p *P2pServer) connectToPeers() {
 		conn, _, err := websocket.Dial(ctx, peer, nil)
 		if err != nil {
 			fmt.Print("Fail in connect to peer\n")
-			log.Fatal(err)
+			// log.Fatal(err)
 		}
 		defer conn.Close(websocket.StatusInternalError, "the sky is falling")
 
-		// p.Connections = append(p.Connections, *conn)
+		p.Contexts = append(p.Contexts, &ctx)
+		p.Connections = append(p.Connections, conn)
 
 		err = wsjson.Write(ctx, *&conn, "Slave -> Master \n")
 		if err != nil {
 			fmt.Print(err)
-			log.Fatal(err)
+			// log.Fatal(err)
 		}
 
 		var v interface{}
 		err = wsjson.Read(ctx, conn, &v)
 		if err != nil {
 			fmt.Print(err)
-			log.Fatal(err)
+			// log.Fatal(err)
 		}
 		fmt.Print(v)
 
@@ -115,15 +115,9 @@ func (p *P2pServer) messageHandler(cxt *context.Context, conn *websocket.Conn) {
 		log.Fatal(err)
 	}
 
-	// conn.Close(websocket.StatusNormalClosure, "")
-	fmt.Print(str)
-
 	if str == "null" {
 		return
 	}
-
-	// obj := StringToObject[[]blockchain.Block](str)
-	// fmt.Print(obj)
 }
 
 func ObjectToString[T any](object T) string {
@@ -145,13 +139,13 @@ func StringToObject[T any](str string) T {
 
 	err := json.Unmarshal(bytes.Bytes(), &object)
 	if err != nil {
-		log.Fatal(err)
+		// log.Fatal(err)
 	}
 
 	return object
 }
 
-func (p *P2pServer) sendChain(ctx *context.Context, conn websocket.Conn) {
+func (p *P2pServer) sendChain(ctx *context.Context, conn *websocket.Conn) {
 	str := ObjectToString(p.Blockchain.Chain)
 
 	if str == "null" {
@@ -160,14 +154,14 @@ func (p *P2pServer) sendChain(ctx *context.Context, conn websocket.Conn) {
 
 	fmt.Print(str)
 
-	err := wsjson.Write(*ctx, &conn, str)
+	err := wsjson.Write(*ctx, conn, str)
 	if err != nil {
-		log.Fatal(err)
+		// log.Fatal(err)
 	}
 }
 
 func (p *P2pServer) SyncChains() {
 	for i, conn := range p.Connections {
-		p.sendChain(p.Contexts[i], *conn)
+		p.sendChain(p.Contexts[i], conn)
 	}
 }

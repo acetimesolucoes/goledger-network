@@ -48,16 +48,6 @@ func (c *Config) getPeers() {
 		c.Peers = []string{}
 	}
 
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// peers := []string{}
-
-	// if peers != nil || len(peers) == 0 {
-	// 	peers = []string{}
-	// }
-
 }
 
 func (c *Config) getP2pPort() {
