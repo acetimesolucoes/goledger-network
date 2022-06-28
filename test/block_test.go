@@ -3,7 +3,7 @@ package test
 import (
 	"testing"
 
-	"github.com/acetimesolutions/chain-goledger/blockchain"
+	"github.com/acetimesolutions/goledger-network/blockchain"
 )
 
 func TestCreateBlock(t *testing.T) {

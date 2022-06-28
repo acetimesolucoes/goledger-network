@@ -7,13 +7,14 @@ import (
 )
 
 type BlockchainServer struct {
-	Blockchain Blockchain
+	Blockchain *Blockchain
 	// P2PServer  *p2p.P2pServer
 }
 
-func (b *BlockchainServer) Run(e *gin.Engine, bc Blockchain) {
+func (b *BlockchainServer) Run(e *gin.Engine, bc *Blockchain) {
 
-	b.Blockchain.ReplaceChain(bc.Chain)
+	// b.Blockchain.ReplaceChain(bc.Chain)
+	b.Blockchain = bc
 
 	e.GET("/blocks", b.handleBlocks())
 	e.POST("/mine", b.handleMine())

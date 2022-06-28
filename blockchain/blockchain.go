@@ -5,7 +5,7 @@ import (
 )
 
 type Blockchain struct {
-	Chain []Block
+	Chain *[]Block
 }
 
 func (b *Blockchain) Init() {
@@ -13,15 +13,22 @@ func (b *Blockchain) Init() {
 	var genesis Block
 	genesis.Genesis()
 
-	b.Chain = append(b.Chain, genesis)
+	b.Chain = new([]Block)
+	*b.Chain = append(*b.Chain, genesis)
 }
 
+/* This method add new block to chain */
 func (b *Blockchain) AddBlock(data any) Block {
 
 	var block Block
-	block.MineBlock(b.Chain[len(b.Chain)-1], data)
+	var lastBlock Block
 
-	b.Chain = append(b.Chain, block)
+	chainCopy := *b.Chain
+	lastBlock = chainCopy[len(*b.Chain)-1]
+
+	block.MineBlock(&lastBlock, data)
+
+	*b.Chain = append(*b.Chain, block)
 
 	return block
 }
@@ -48,7 +55,7 @@ func (b *Blockchain) IsValid(chain []Block) bool {
 
 func (b *Blockchain) ReplaceChain(newChain []Block) {
 
-	if len(newChain) <= len(b.Chain) {
+	if len(newChain) <= len(*b.Chain) {
 		fmt.Print("Received chain is not longer than the current chain.\n")
 		return
 	} else if !b.IsValid(newChain) {
@@ -56,6 +63,6 @@ func (b *Blockchain) ReplaceChain(newChain []Block) {
 		return
 	} else {
 		fmt.Print("Replacing blockchain with the new chain.\n")
-		b.Chain = newChain
+		*b.Chain = newChain
 	}
 }

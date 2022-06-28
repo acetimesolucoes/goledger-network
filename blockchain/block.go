@@ -37,10 +37,10 @@ func (b *Block) ToString() {
 }
 
 func (b *Block) Genesis() {
-	b.init(1656202080635360013, "-----", "f1r57-h45h", [0]string{})
+	b.init(1656202080635360013, "-----", "f1r57-h45h", "genesis-data")
 }
 
-func (b *Block) MineBlock(lastBlock Block, data any) {
+func (b *Block) MineBlock(lastBlock *Block, data any) {
 
 	timestamp := time.Now().UnixNano()
 	lastHash := lastBlock.Hash

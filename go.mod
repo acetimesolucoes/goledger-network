@@ -1,4 +1,4 @@
-module github.com/acetimesolutions/chain-goledger
+module github.com/acetimesolutions/goledger-network
 
 go 1.18
 

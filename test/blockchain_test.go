@@ -3,7 +3,7 @@ package test
 import (
 	"testing"
 
-	"github.com/acetimesolutions/chain-goledger/blockchain"
+	"github.com/acetimesolutions/goledger-network/blockchain"
 )
 
 var blchn1 blockchain.Blockchain

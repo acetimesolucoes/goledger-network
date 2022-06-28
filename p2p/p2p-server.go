@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/acetimesolutions/chain-goledger/blockchain"
-	"github.com/acetimesolutions/chain-goledger/config"
+	"github.com/acetimesolutions/goledger-network/blockchain"
+	"github.com/acetimesolutions/goledger-network/config"
 	"github.com/gin-gonic/gin"
 
 	"nhooyr.io/websocket"
@@ -24,13 +24,15 @@ type IP2pServer interface {
 }
 
 type P2pServer struct {
-	Blockchain  blockchain.Blockchain
+	Blockchain  *blockchain.Blockchain
 	Connections []*websocket.Conn
 	Contexts    []*context.Context
 	Config      config.Config
 }
 
-func (p *P2pServer) Run(e *gin.Engine) {
+func (p *P2pServer) Run(e *gin.Engine, b *blockchain.Blockchain) {
+
+	p.Blockchain = b
 
 	e.LoadHTMLFiles("static/index.html")
 
@@ -62,7 +64,7 @@ func (p *P2pServer) websocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx, cancel := context.WithTimeout(r.Context(), time.Second*10)
-	p.messageHandler(&ctx, conn)
+	p.messageHandler(ctx, conn)
 	p.SyncChains()
 
 	// defer conn.Close(websocket.StatusInternalError, "closed websocket connection...")
@@ -81,7 +83,7 @@ func (p *P2pServer) connectToPeers() {
 		conn, _, err := websocket.Dial(ctx, peer, nil)
 		if err != nil {
 			fmt.Print("Fail in connect to peer\n")
-			// log.Fatal(err)
+			log.Panic(err)
 		}
 		defer conn.Close(websocket.StatusInternalError, "the sky is falling")
 
@@ -94,23 +96,28 @@ func (p *P2pServer) connectToPeers() {
 			// log.Fatal(err)
 		}
 
-		var v interface{}
-		err = wsjson.Read(ctx, conn, &v)
+		var jsonReceived string
+		err = wsjson.Read(ctx, conn, &jsonReceived)
 		if err != nil {
 			fmt.Print(err)
 			// log.Fatal(err)
 		}
-		fmt.Print(v)
+
+		fmt.Println(StringToObject[[]blockchain.Block](jsonReceived))
+
+		chainToReplace := StringToObject[[]blockchain.Block](jsonReceived)
+
+		p.Blockchain.ReplaceChain(chainToReplace)
 
 		conn.Close(websocket.StatusNormalClosure, "")
 	}
 }
 
-func (p *P2pServer) messageHandler(cxt *context.Context, conn *websocket.Conn) {
+func (p *P2pServer) messageHandler(cxt context.Context, conn *websocket.Conn) {
 
-	str := ObjectToString(p.Blockchain.Chain)
+	str := ObjectToString(&p.Blockchain.Chain)
 
-	err := wsjson.Write(*cxt, conn, str)
+	err := wsjson.Write(cxt, conn, str)
 	if err != nil {
 		log.Fatal(err)
 	}

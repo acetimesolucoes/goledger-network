@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/acetimesolutions/chain-goledger/blockchain"
-	"github.com/acetimesolutions/chain-goledger/config"
-	"github.com/acetimesolutions/chain-goledger/p2p"
+	"github.com/acetimesolutions/goledger-network/blockchain"
+	"github.com/acetimesolutions/goledger-network/config"
+	"github.com/acetimesolutions/goledger-network/p2p"
 	"github.com/gin-gonic/gin"
 )
 
@@ -22,12 +22,12 @@ func main() {
 
 	router := gin.Default()
 
-	p2pServer.Blockchain.ReplaceChain(bc.Chain)
+	// p2pServer.Blockchain.ReplaceChain(bc.Chain)
 	p2pServer.Config.LoadConfigs()
-	p2pServer.Run(router)
+	p2pServer.Run(router, &bc)
 
-	blockchainServer.Blockchain.ReplaceChain(bc.Chain)
-	blockchainServer.Run(router, bc)
+	// blockchainServer.Blockchain.ReplaceChain(bc.Chain)
+	blockchainServer.Run(router, &bc)
 
 	router.GET("/ping", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{
