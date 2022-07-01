@@ -33,7 +33,7 @@ func (b *Block) ToString() {
 	Hash: %s
 	Data: %s`, b.Timestamp, b.LastHash, b.Hash, b.Data)
 
-	fmt.Print("\r\r")
+	fmt.Println("\r\r")
 }
 
 func (b *Block) Genesis() {

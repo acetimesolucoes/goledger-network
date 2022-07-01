@@ -22,12 +22,13 @@ func main() {
 
 	router := gin.Default()
 
-	// p2pServer.Blockchain.ReplaceChain(bc.Chain)
 	p2pServer.Config.LoadConfigs()
 	p2pServer.Run(router, &bc)
 
-	// blockchainServer.Blockchain.ReplaceChain(bc.Chain)
 	blockchainServer.Run(router, &bc)
+
+	router.GET("/blocks", handleBlocks(&blockchainServer, &p2pServer))
+	router.POST("/mine", handleMine(&blockchainServer, &p2pServer))
 
 	router.GET("/ping", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{
@@ -38,4 +39,23 @@ func main() {
 	})
 
 	router.Run(":" + strconv.Itoa(conf.HTTP_PORT))
+}
+
+func handleBlocks(b *blockchain.BlockchainServer, p *p2p.P2pServer) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		ctx.JSON(http.StatusOK, b.Blockchain.Chain)
+	}
+}
+
+func handleMine(b *blockchain.BlockchainServer, p *p2p.P2pServer) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var block any
+		ctx.BindJSON(&block)
+		b.Blockchain.AddBlock(&block)
+
+		p.SyncChains()
+
+		// ctx.Redirect(http.StatusPermanentRedirect, "p2p/sync")
+		ctx.JSON(http.StatusOK, b.Blockchain.Chain)
+	}
 }
