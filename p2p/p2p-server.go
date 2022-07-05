@@ -26,7 +26,7 @@ type IP2pServer interface {
 type P2pServer struct {
 	Blockchain  *blockchain.Blockchain
 	Connections []websocket.Conn
-	Contexts    []context.Context
+	Contexts    []*context.Context
 	Config      config.Config
 	Context     *context.Context
 	Connection  *websocket.Conn
@@ -65,13 +65,14 @@ func (p *P2pServer) websocketHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("start websocket connection...")
 	}
 
-	ctx, _ := context.WithTimeout(r.Context(), time.Second*100)
+	fmt.Println(time.Second * 1000000)
+	ctx, _ := context.WithTimeout(r.Context(), time.Second*1000000)
 	// defer cancel()
 
-	p.Contexts = append(p.Contexts, ctx)
+	p.Contexts = append(p.Contexts, &ctx)
 	p.Connections = append(p.Connections, *conn)
 
-	p.messageHandler(&p.Contexts[0], &p.Connections[0])
+	p.messageHandler(p.Contexts[0], &p.Connections[0])
 
 	// defer conn.Close(websocket.StatusInternalError, "closed websocket connection...")
 	// defer cancel()
@@ -93,7 +94,7 @@ func (p *P2pServer) connectToPeers() {
 		}
 		// defer conn.Close(websocket.StatusInternalError, "the sky is falling")
 
-		p.Contexts = append(p.Contexts, ctx)
+		p.Contexts = append(p.Contexts, &ctx)
 		p.Connections = append(p.Connections, *conn)
 
 		err = wsjson.Write(ctx, conn, "New peer connected to server \n")
@@ -168,7 +169,7 @@ func StringToObject[T any](str string) T {
 	return object
 }
 
-func (p *P2pServer) sendChain(ctx context.Context, conn websocket.Conn) {
+func (p *P2pServer) sendChain(ctx context.Context, conn *websocket.Conn) {
 	// ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	// defer cancel()
 
@@ -180,14 +181,14 @@ func (p *P2pServer) sendChain(ctx context.Context, conn websocket.Conn) {
 
 	fmt.Println("json to send: " + str)
 
-	err := wsjson.Write(ctx, &conn, str)
+	err := wsjson.Write(ctx, conn, str)
 	// err := wsjson.Write(ctx, conn, p.Blockchain.Chain)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	var v interface{}
-	err = wsjson.Read(ctx, &conn, &v)
+	err = wsjson.Read(ctx, conn, &v)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -195,6 +196,6 @@ func (p *P2pServer) sendChain(ctx context.Context, conn websocket.Conn) {
 
 func (p *P2pServer) SyncChains() {
 	for i, _ := range p.Connections {
-		p.sendChain(p.Contexts[i], p.Connections[i])
+		p.sendChain(*p.Contexts[i], &p.Connections[i])
 	}
 }
