@@ -17,19 +17,11 @@ import (
 	"nhooyr.io/websocket/wsjson"
 )
 
-type IP2pServer interface {
-	Run()
-	SyncChains()
-	P2pServer
-}
-
 type P2pServer struct {
 	Blockchain  *blockchain.Blockchain
 	Connections []websocket.Conn
 	Contexts    []*context.Context
 	Config      config.Config
-	Context     *context.Context
-	Connection  *websocket.Conn
 }
 
 func (p *P2pServer) Run(e *gin.Engine, b *blockchain.Blockchain) {
@@ -46,7 +38,6 @@ func (p *P2pServer) Run(e *gin.Engine, b *blockchain.Blockchain) {
 		p.websocketHandler(c.Writer, c.Request)
 	})
 
-	// p.websocketHandler(nil, &http.Request{})
 	p.connectToPeers()
 }
 
