@@ -71,14 +71,15 @@ func (p *P2pServer) websocketHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *P2pServer) connectToPeers() {
-
 	ctx, _ := context.WithTimeout(context.Background(), time.Minute)
 	// defer cancel()
 
 	for i := 0; i < len(p.Config.Peers); i++ {
 		peer := p.Config.Peers[i]
+		println(peer)
 
 		conn, _, err := websocket.Dial(ctx, peer, nil)
+		println("######################")
 		if err != nil {
 			fmt.Println("Fail in connect to peer")
 			log.Panic(err)
@@ -89,6 +90,7 @@ func (p *P2pServer) connectToPeers() {
 		p.Connections = append(p.Connections, *conn)
 
 		err = wsjson.Write(ctx, conn, "New peer connected to server \n")
+
 		if err != nil {
 			fmt.Println(err)
 			// log.Fatal(err)
@@ -101,6 +103,7 @@ func (p *P2pServer) connectToPeers() {
 			// log.Fatal(err)
 		}
 
+		println("#################")
 		fmt.Println("received: ", jsonReceived)
 
 		fmt.Println(StringToObject[[]blockchain.Block](jsonReceived))
@@ -126,10 +129,12 @@ func (p *P2pServer) messageHandler(ctx *context.Context, conn *websocket.Conn) {
 		return
 	}
 
-	var jsonReceived string
+	var jsonReceived interface{}
 	err = wsjson.Read(*ctx, conn, &jsonReceived)
+
 	if err != nil {
-		log.Fatal(err)
+		// log.Fatal(err)
+		print(err)
 	}
 
 	fmt.Println("received: ", jsonReceived)
@@ -173,16 +178,20 @@ func (p *P2pServer) sendChain(ctx context.Context, conn *websocket.Conn) {
 	fmt.Println("json to send: " + str)
 
 	err := wsjson.Write(ctx, conn, str)
-	// err := wsjson.Write(ctx, conn, p.Blockchain.Chain)
+
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var v interface{}
-	err = wsjson.Read(ctx, conn, &v)
-	if err != nil {
-		log.Fatal(err)
-	}
+	// var jsonReceived interface{}
+	// err = wsjson.Read(ctx, conn, &jsonReceived)
+
+	// println("jsonReceived:", &jsonReceived)
+
+	// if err != nil {
+	// 	log.Fatal(err)
+	// 	// print(err)
+	// }
 }
 
 func (p *P2pServer) SyncChains() {

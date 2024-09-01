@@ -25,13 +25,13 @@ func init() {
 }
 
 func (c *Config) LoadConfigs() {
-	c.getP2pPort()
+	c.getP2PPort()
 	c.getPeers()
 	c.getPort()
 }
 
 func (c *Config) getPort() {
-	port, err := strconv.Atoi(os.Getenv("HTTP_PORT"))
+	port, err := strconv.Atoi(strings.TrimSpace(os.Getenv("HTTP_PORT")))
 
 	if err != nil {
 		port = 3001
@@ -42,16 +42,20 @@ func (c *Config) getPort() {
 
 func (c *Config) getPeers() {
 
-	if os.Getenv("PEERS") != "" {
-		c.Peers = strings.Split(string(os.Getenv("PEERS")), ",")
+	peers := strings.TrimSpace(os.Getenv("PEERS"))
+
+	if peers != "" {
+		println("PEERS=", peers)
+		c.Peers = strings.Split(peers, ",")
 	} else {
+		fmt.Println("PEERS=", peers)
 		c.Peers = []string{}
 	}
 
 }
 
-func (c *Config) getP2pPort() {
-	p2pPort, err := strconv.Atoi(os.Getenv("P2P_PORT"))
+func (c *Config) getP2PPort() {
+	p2pPort, err := strconv.Atoi(strings.TrimSpace(os.Getenv("P2P_PORT")))
 
 	if err != nil {
 		p2pPort = 5000

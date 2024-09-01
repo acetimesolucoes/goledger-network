@@ -4,10 +4,15 @@
   "main": "main.go",
   "license": "MIT",
   "scripts": {
-    "start:p2p1": "HTTP_PORT=3001 P2P_PORT=3001 PEERS= go run main.go",
-    "start:p2p2": "HTTP_PORT=3002 P2P_PORT=3002 PEERS=ws://localhost:3001/p2p/connect go run main.go",
-    "start:p2p3": "HTTP_PORT=3003 P2P_PORT=3003 PEERS=ws://localhost:3001/p2p/connect,ws://localhost:3002/p2p/connect go run main.go",
-    "start:p2p4": "HTTP_PORT=3004 P2P_PORT=3004 PEERS=ws://localhost:3001/p2p/connect,ws://localhost:3002/p2p/connect,ws://localhost:3003/p2p/connect go run main.go",
-    "start:p2p5": "HTTP_PORT=3005 P2P_PORT=3005 PEERS=ws://localhost:3001/p2p/connect,ws://localhost:3002/p2p/connect,ws://localhost:3003/p2p/connect,ws://localhost:3004/p2p/connect go run main.go"
+    "start:p2p1": "HTTP_PORT=3001 P2P_PORT=5001 PEERS= go run main.go",
+    "start:p2p2": "HTTP_PORT=3002 P2P_PORT=5002 PEERS=ws://localhost:5001/p2p/connect go run main.go",
+    "start:p2p3": "HTTP_PORT=3003 P2P_PORT=5003 PEERS=ws://localhost:5001/p2p/connect,ws://localhost:5002/p2p/connect go run main.go",
+    "start:p2p4": "HTTP_PORT=3004 P2P_PORT=5004 PEERS=ws://localhost:5001/p2p/connect,ws://localhost:5002/p2p/connect,ws://localhost:5003/p2p/connect go run main.go",
+    "start:p2p5": "HTTP_PORT=3005 P2P_PORT=5005 PEERS=ws://localhost:5001/p2p/connect,ws://localhost:5002/p2p/connect,ws://localhost:5003/p2p/connect,ws://localhost:5004/p2p/connect go run main.go",
+    "start:win:p2p1": "set HTTP_PORT=3001 && set P2P_PORT=3001 && go run main.go",
+    "start:win:p2p2": "set HTTP_PORT=3002 && set P2P_PORT=3002 && set PEERS=ws://localhost:3001/p2p/connect && go run main.go",
+    "start:win:p2p3": "set HTTP_PORT=3003 && set P2P_PORT=3003 && set PEERS=ws://localhost:3001/p2p/connect,ws://localhost:3002/p2p/connect && go run main.go",
+    "start:win:p2p4": "set HTTP_PORT=3004 && set P2P_PORT=3004 && set PEERS=ws://localhost:3001/p2p/connect,ws://localhost:3002/p2p/connect,ws://localhost:3003/p2p/connect && go run main.go",
+    "start:win:p2p5": "set HTTP_PORT=3005 && set P2P_PORT=3005 && set PEERS=ws://localhost:3001/p2p/connect,ws://localhost:3002/p2p/connect,ws://localhost:3003/p2p/connect,ws://localhost:3004/p2p/connect && go run main.go"
   }
 }
