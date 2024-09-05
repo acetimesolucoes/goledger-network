@@ -5,10 +5,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+	"time"
 
 	"github.com/acetimesolutions/goledger-network/blockchain"
 	"github.com/acetimesolutions/goledger-network/config"
+	"github.com/coder/websocket"
+	"github.com/coder/websocket/wsjson"
 	"github.com/gin-gonic/gin"
 )
 
@@ -38,22 +42,33 @@ func (p *P2pServer) Run(e *gin.Engine, b *blockchain.Blockchain) {
 
 func (p *P2pServer) websocketHandler(w http.ResponseWriter, r *http.Request) {
 
-	// if w == nil || r == nil {
-	// 	return
-	// }
+	if w == nil || r == nil {
+		return
+	}
 
-	// conn, err := websocket.Accept(w, r, nil)
+	conn, err := websocket.Accept(w, r, nil)
 
-	// if err != nil {
-	// 	fmt.Printf("Failed to set websocket upgrade: %+v", err)
-	// 	return
-	// } else {
-	// 	fmt.Println("start websocket connection...")
-	// }
+	if err != nil {
+		fmt.Printf("Failed to set websocket upgrade: %+v", err)
+		return
+	} else {
+		fmt.Println("start websocket connection...")
+	}
+	defer conn.CloseNow()
 
-	// fmt.Println(time.Second * 1000000)
-	// ctx, cancel := context.WithTimeout(r.Context(), time.Hour*1000000)
-	// defer cancel()
+	ctx, cancel := context.WithTimeout(r.Context(), time.Second*10)
+	defer cancel()
+
+	var jsonReceived interface{}
+	err = wsjson.Read(ctx, conn, jsonReceived)
+
+	if err != nil {
+		// ...
+	}
+
+	log.Printf("received: %v", jsonReceived)
+
+	conn.Close(websocket.StatusNormalClosure, "")
 
 	// p.Contexts = append(p.Contexts, ctx)
 	// p.Connections = append(p.Connections, conn)
