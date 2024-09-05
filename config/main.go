@@ -34,7 +34,7 @@ func (c *Config) getPort() {
 	port, err := strconv.Atoi(strings.TrimSpace(os.Getenv("HTTP_PORT")))
 
 	if err != nil {
-		port = 3001
+		port = 3003
 	}
 
 	c.HTTP_PORT = port
@@ -49,7 +49,8 @@ func (c *Config) getPeers() {
 		c.Peers = strings.Split(peers, ",")
 	} else {
 		fmt.Println("PEERS=", peers)
-		c.Peers = []string{}
+		c.Peers = []string{"ws://localhost:3001/p2p/connect", "ws://localhost:3002/p2p/connect"}
+		// c.Peers = []string{}
 	}
 
 }
@@ -58,7 +59,7 @@ func (c *Config) getP2PPort() {
 	p2pPort, err := strconv.Atoi(strings.TrimSpace(os.Getenv("P2P_PORT")))
 
 	if err != nil {
-		p2pPort = 5000
+		p2pPort = 5003
 	}
 
 	c.P2P_PORT = p2pPort

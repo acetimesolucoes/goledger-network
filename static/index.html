@@ -24,13 +24,12 @@
 
     c.onopen = function () {
       // send(JSON.stringify([
-      //   { timestamp: 1656202080635360013, last_hash: "-----", hash: "f1r57-h45h", data: "genesis" },
-      //   // { timestamp: 1656202080635360013, last_hash: "f1r57-h45h", hash: "123545555", data: "genesis" }
+      //   { timestamp: 1656202080635360013, last_hash: "-----", hash: "f1r57-h45h", data: "genesis" }
       // ]));
 
-      // setInterval(function () {
-      //   send(JSON.stringify([{timestamp:1656202080635360013,last_hash:"-----",hash:"f1r57-h45h",data:"genesis"}]));
-      // }, 1000);
+      setInterval(function () {
+        send(JSON.stringify([{timestamp:1656202080635360013,last_hash:"-----",hash:"f1r57-h45h",data:"genesis"}]));
+      }, 1000);
     };
   </script>
 </body>

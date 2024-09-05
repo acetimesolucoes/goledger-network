@@ -19,8 +19,8 @@ import (
 
 type P2pServer struct {
 	Blockchain  *blockchain.Blockchain
-	Connections []websocket.Conn
-	Contexts    []*context.Context
+	Connections []*websocket.Conn
+	Contexts    []context.Context
 	Config      config.Config
 }
 
@@ -57,13 +57,13 @@ func (p *P2pServer) websocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Println(time.Second * 1000000)
-	ctx, _ := context.WithTimeout(r.Context(), time.Second*1000000)
-	// defer cancel()
+	ctx, cancel := context.WithTimeout(r.Context(), time.Hour*1000000)
+	defer cancel()
 
-	p.Contexts = append(p.Contexts, &ctx)
-	p.Connections = append(p.Connections, *conn)
+	p.Contexts = append(p.Contexts, ctx)
+	p.Connections = append(p.Connections, conn)
 
-	p.messageHandler(p.Contexts[0], &p.Connections[0])
+	p.messageHandler(p.Contexts[len(p.Contexts)-1], p.Connections[len(p.Connections)-1])
 
 	// defer conn.Close(websocket.StatusInternalError, "closed websocket connection...")
 	// defer cancel()
@@ -71,42 +71,41 @@ func (p *P2pServer) websocketHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *P2pServer) connectToPeers() {
-	ctx, _ := context.WithTimeout(context.Background(), time.Minute)
-	// defer cancel()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Hour*100000)
+	defer cancel()
 
 	for i := 0; i < len(p.Config.Peers); i++ {
 		peer := p.Config.Peers[i]
 		println(peer)
 
 		conn, _, err := websocket.Dial(ctx, peer, nil)
-		println("######################")
 		if err != nil {
 			fmt.Println("Fail in connect to peer")
 			log.Panic(err)
 		}
 		// defer conn.Close(websocket.StatusInternalError, "the sky is falling")
 
-		p.Contexts = append(p.Contexts, &ctx)
-		p.Connections = append(p.Connections, *conn)
+		p.Contexts = append(p.Contexts, ctx)
+		p.Connections = append(p.Connections, conn)
 
 		err = wsjson.Write(ctx, conn, "New peer connected to server \n")
 
 		if err != nil {
-			fmt.Println(err)
-			// log.Fatal(err)
+			// fmt.Println(err)
+			log.Fatal(err)
 		}
 
 		var jsonReceived string
 		err = wsjson.Read(ctx, conn, &jsonReceived)
 		if err != nil {
-			fmt.Println(err)
-			// log.Fatal(err)
+			// fmt.Println(err)
+			log.Fatal(err)
 		}
 
-		println("#################")
 		fmt.Println("received: ", jsonReceived)
-
+		fmt.Println("#############")
 		fmt.Println(StringToObject[[]blockchain.Block](jsonReceived))
+		fmt.Println("#############")
 
 		chainToReplace := StringToObject[[]blockchain.Block](jsonReceived)
 
@@ -116,11 +115,11 @@ func (p *P2pServer) connectToPeers() {
 	}
 }
 
-func (p *P2pServer) messageHandler(ctx *context.Context, conn *websocket.Conn) {
+func (p *P2pServer) messageHandler(ctx context.Context, conn *websocket.Conn) {
 
 	str := ObjectToString(p.Blockchain.Chain)
 
-	err := wsjson.Write(*ctx, conn, str)
+	err := wsjson.Write(ctx, conn, str)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -129,12 +128,12 @@ func (p *P2pServer) messageHandler(ctx *context.Context, conn *websocket.Conn) {
 		return
 	}
 
-	var jsonReceived interface{}
-	err = wsjson.Read(*ctx, conn, &jsonReceived)
+	var jsonReceived string
+	err = wsjson.Read(ctx, conn, &jsonReceived)
 
 	if err != nil {
-		// log.Fatal(err)
-		print(err)
+		log.Fatal(err)
+		// print(err)
 	}
 
 	fmt.Println("received: ", jsonReceived)
@@ -166,8 +165,6 @@ func StringToObject[T any](str string) T {
 }
 
 func (p *P2pServer) sendChain(ctx context.Context, conn *websocket.Conn) {
-	// ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	// defer cancel()
 
 	str := ObjectToString(p.Blockchain.Chain)
 
@@ -177,25 +174,31 @@ func (p *P2pServer) sendChain(ctx context.Context, conn *websocket.Conn) {
 
 	fmt.Println("json to send: " + str)
 
-	err := wsjson.Write(ctx, conn, str)
+	// select {
+	// case <-ctx.Done():
+	// 	log.Println("Contexto cancelado")
+	// 	ctx, _ = context.WithTimeout(context.Background(), time.Hour*100000)
+	// default:
+	// }
 
+	err := wsjson.Write(ctx, conn, str)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// var jsonReceived interface{}
-	// err = wsjson.Read(ctx, conn, &jsonReceived)
+	var jsonReceived string
+	err = wsjson.Read(ctx, conn, &jsonReceived)
 
-	// println("jsonReceived:", &jsonReceived)
+	println("jsonReceived:", &jsonReceived)
 
-	// if err != nil {
-	// 	log.Fatal(err)
-	// 	// print(err)
-	// }
+	if err != nil {
+		// log.Fatal(err)
+		print(err)
+	}
 }
 
 func (p *P2pServer) SyncChains() {
 	for i, _ := range p.Connections {
-		p.sendChain(*p.Contexts[i], &p.Connections[i])
+		p.sendChain(p.Contexts[i], p.Connections[i])
 	}
 }
