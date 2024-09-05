@@ -25,8 +25,6 @@ type P2pServer struct {
 
 func (p *P2pServer) Run(e *gin.Engine, b *blockchain.Blockchain) {
 
-	p.Blockchain = b
-
 	e.LoadHTMLFiles("static/index.html")
 
 	e.GET("/", func(c *gin.Context) {
@@ -35,6 +33,10 @@ func (p *P2pServer) Run(e *gin.Engine, b *blockchain.Blockchain) {
 
 	e.GET("/p2p/connect", func(c *gin.Context) {
 		p.websocketHandler(c.Writer, c.Request)
+	})
+
+	e.GET("/p2p/sync", func(c *gin.Context) {
+		p.SyncChains()
 	})
 
 	p.connectToPeers()
@@ -52,7 +54,7 @@ func (p *P2pServer) websocketHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Failed to set websocket upgrade: %+v", err)
 		return
 	} else {
-		fmt.Println("start websocket connection...")
+		fmt.Println("Start websocket connection...")
 	}
 	defer conn.CloseNow()
 
