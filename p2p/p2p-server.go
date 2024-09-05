@@ -17,10 +17,10 @@ import (
 )
 
 type P2pServer struct {
-	Blockchain *blockchain.Blockchain
-	// Connections []*websocket.Conn
-	Contexts []context.Context
-	Config   config.Config
+	Blockchain  *blockchain.Blockchain
+	Connections []*websocket.Conn
+	Contexts    []context.Context
+	Config      config.Config
 }
 
 func (p *P2pServer) Run(e *gin.Engine, b *blockchain.Blockchain) {
@@ -68,12 +68,12 @@ func (p *P2pServer) websocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("received: %v", jsonReceived)
 
-	conn.Close(websocket.StatusNormalClosure, "")
+	// conn.Close(websocket.StatusNormalClosure, "")
 
-	// p.Contexts = append(p.Contexts, ctx)
-	// p.Connections = append(p.Connections, conn)
+	p.Contexts = append(p.Contexts, ctx)
+	p.Connections = append(p.Connections, conn)
 
-	// p.messageHandler(p.Contexts[len(p.Contexts)-1], p.Connections[len(p.Connections)-1])
+	p.messageHandler(p.Contexts[len(p.Contexts)-1], p.Connections[len(p.Connections)-1])
 
 	// defer conn.Close(websocket.StatusInternalError, "closed websocket connection...")
 	// defer cancel()
@@ -81,73 +81,74 @@ func (p *P2pServer) websocketHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *P2pServer) connectToPeers() {
-	// ctx, cancel := context.WithTimeout(context.Background(), time.Hour*100000)
+	ctx, _ := context.WithTimeout(context.Background(), time.Second*100000)
 	// defer cancel()
 
-	// for i := 0; i < len(p.Config.Peers); i++ {
-	// 	peer := p.Config.Peers[i]
-	// 	println(peer)
+	for i := 0; i < len(p.Config.Peers); i++ {
+		peer := p.Config.Peers[i]
 
-	// 	conn, _, err := websocket.Dial(ctx, peer, nil)
-	// 	if err != nil {
-	// 		fmt.Println("Fail in connect to peer")
-	// 		log.Panic(err)
-	// 	}
-	// 	// defer conn.Close(websocket.StatusInternalError, "the sky is falling")
+		println(peer)
 
-	// 	p.Contexts = append(p.Contexts, ctx)
-	// 	p.Connections = append(p.Connections, conn)
+		conn, _, err := websocket.Dial(ctx, peer, nil)
+		if err != nil {
+			fmt.Println("Fail in connect to peer: " + peer)
+			log.Panic(err)
+		}
 
-	// 	err = wsjson.Write(ctx, conn, "New peer connected to server \n")
+		p.Contexts = append(p.Contexts, ctx)
+		p.Connections = append(p.Connections, conn)
 
-	// 	if err != nil {
-	// 		// fmt.Println(err)
-	// 		log.Fatal(err)
-	// 	}
+		err = wsjson.Write(ctx, conn, "New peer connected to server \n")
 
-	// 	var jsonReceived string
-	// 	err = wsjson.Read(ctx, conn, &jsonReceived)
-	// 	if err != nil {
-	// 		// fmt.Println(err)
-	// 		log.Fatal(err)
-	// 	}
+		if err != nil {
+			// fmt.Println(err)
+			log.Fatal(err)
+		}
 
-	// 	fmt.Println("received: ", jsonReceived)
-	// 	fmt.Println("#############")
-	// 	fmt.Println(StringToObject[[]blockchain.Block](jsonReceived))
-	// 	fmt.Println("#############")
+		var jsonReceived string
+		err = wsjson.Read(ctx, conn, &jsonReceived)
+		if err != nil {
+			// fmt.Println(err)
+			log.Fatal(err)
+		}
 
-	// 	chainToReplace := StringToObject[[]blockchain.Block](jsonReceived)
+		fmt.Println("received: ", jsonReceived)
+		fmt.Println("#############")
+		fmt.Println(StringToObject[[]blockchain.Block](jsonReceived))
+		fmt.Println("#############")
 
-	// 	p.Blockchain.ReplaceChain(chainToReplace)
+		chainToReplace := StringToObject[[]blockchain.Block](jsonReceived)
 
-	// conn.Close(websocket.StatusNormalClosure, "")
-	// }
+		p.Blockchain.ReplaceChain(chainToReplace)
+
+		// conn.Close(websocket.StatusNormalClosure, "")
+		// defer conn.Close(websocket.StatusInternalError, "The sky is falling")
+	}
 }
 
-// func (p *P2pServer) messageHandler(ctx context.Context, conn *websocket.Conn) {
+func (p *P2pServer) messageHandler(ctx context.Context, conn *websocket.Conn) {
 
-// 	str := ObjectToString(p.Blockchain.Chain)
+	str := ObjectToString(p.Blockchain.Chain)
 
-// 	err := wsjson.Write(ctx, conn, str)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
+	err := wsjson.Write(ctx, conn, str)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-// 	if str == "null" {
-// 		return
-// 	}
+	if str == "null" {
+		return
+	}
 
-// 	var jsonReceived string
-// 	err = wsjson.Read(ctx, conn, &jsonReceived)
+	var jsonReceived string
+	err = wsjson.Read(ctx, conn, &jsonReceived)
 
-// 	if err != nil {
-// 		log.Fatal(err)
-// 		// print(err)
-// 	}
+	if err != nil {
+		log.Fatal(err)
+		// print(err)
+	}
 
-// 	fmt.Println("received: ", jsonReceived)
-// }
+	fmt.Println("received: ", jsonReceived)
+}
 
 func ObjectToString[T any](object T) string {
 	byteArray, err := json.Marshal(object)
@@ -174,41 +175,41 @@ func StringToObject[T any](str string) T {
 	return object
 }
 
-// func (p *P2pServer) sendChain(ctx context.Context, conn *websocket.Conn) {
+func (p *P2pServer) sendChain(ctx context.Context, conn *websocket.Conn) {
 
-// 	str := ObjectToString(p.Blockchain.Chain)
+	str := ObjectToString(p.Blockchain.Chain)
 
-// 	if str == "null" {
-// 		return
-// 	}
+	if str == "null" {
+		return
+	}
 
-// 	fmt.Println("json to send: " + str)
+	fmt.Println("json to send: " + str)
 
-// 	// select {
-// 	// case <-ctx.Done():
-// 	// 	log.Println("Contexto cancelado")
-// 	// 	ctx, _ = context.WithTimeout(context.Background(), time.Hour*100000)
-// 	// default:
-// 	// }
+	select {
+	case <-ctx.Done():
+		log.Println("Contexto cancelado")
+		ctx, _ = context.WithTimeout(context.Background(), time.Hour*100000)
+	default:
+	}
 
-// 	err := wsjson.Write(ctx, conn, str)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
+	err := wsjson.Write(ctx, conn, str)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-// 	var jsonReceived string
-// 	err = wsjson.Read(ctx, conn, &jsonReceived)
+	var jsonReceived string
+	err = wsjson.Read(ctx, conn, &jsonReceived)
 
-// 	println("jsonReceived:", &jsonReceived)
+	println("jsonReceived:", &jsonReceived)
 
-// 	if err != nil {
-// 		// log.Fatal(err)
-// 		print(err)
-// 	}
-// }
+	if err != nil {
+		// log.Fatal(err)
+		print(err)
+	}
+}
 
 func (p *P2pServer) SyncChains() {
-	// for i, _ := range p.Connections {
-	// 	p.sendChain(p.Contexts[i], p.Connections[i])
-	// }
+	for i, _ := range p.Connections {
+		p.sendChain(p.Contexts[i], p.Connections[i])
+	}
 }
